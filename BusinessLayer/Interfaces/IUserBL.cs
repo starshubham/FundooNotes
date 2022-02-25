@@ -9,7 +9,9 @@ namespace BusinessLayer.Interfaces
     public interface IUserBL
     {
         public User Registration(UserRegModel userRegModel);
-        //public string Login(UserLoginModel userLogin);
         public LoginResponseModel UserLogin(UserLoginModel userLog);
+
+        public string ForgetPassword(string email);
+        public bool ResetPassword(string email, string password, string confirmPassword);
     }
 }
