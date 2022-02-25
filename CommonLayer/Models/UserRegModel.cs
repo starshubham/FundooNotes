@@ -19,7 +19,7 @@ namespace CommonLayer.Models
         public string LastName { get; set; }
 
         [Required]
-        
+        [RegularExpression("^[a-z]{3,}[.]*[a-z0-9]*[@]{1}[a-z]{2,}[.]{1}[co]{2}[m]*[.]*[a-z]*$", ErrorMessage = "Enter a valid email.")]
         public string Email { get; set; }
 
         [Required]
