@@ -53,22 +53,6 @@ namespace RepositoryLayer.Services
             }
         }
 
-        ///// <summary>
-        ///// show only Email
-        ///// </summary>
-        ///// <param name="userLogin"></param>
-        ///// <returns></returns>
-        //public string Login(UserLoginModel userLogin)
-        //{
-        //    var LoginResult = this.fundooContext.UserTables.Where(X => X.Email == userLogin.Email && X.Password == userLogin.Password).FirstOrDefault();
-        //    if (LoginResult != null)
-        //    {
-        //        return LoginResult.Email;
-        //    }
-        //    else
-        //        return null;
-        //}
-
         /// <summary>
         /// Show All Registerd Login Data
         /// </summary>
@@ -124,6 +108,48 @@ namespace RepositoryLayer.Services
               expires: DateTime.Now.AddMinutes(60),
               signingCredentials: credentials);
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string ForgetPassword(string email)
+        {
+            try
+            {
+                var existingLogin = this.fundooContext.UserTables.Where(X => X.Email == email).FirstOrDefault();
+                if (existingLogin != null)
+                {
+                    var token = GenerateSecurityToken(email, existingLogin.Id);
+                    new MSMQ_Model().MSMQSender(token);
+                    return token;
+                }
+                else
+                    return null;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public bool ResetPassword(string email, string password, string confirmPassword)
+        {
+            try
+            {
+                if (password.Equals(confirmPassword))
+                {
+                    User user = fundooContext.UserTables.Where(e => e.Email == email).FirstOrDefault();
+                    user.Password = confirmPassword;
+                    fundooContext.SaveChanges();
+                    return true;
+                }
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
