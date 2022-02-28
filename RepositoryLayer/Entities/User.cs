@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,5 +29,7 @@ namespace RepositoryLayer.Entities
 
         public DateTime? CreatedAt { get; set; }  // ? Allow the Nullable value
         public DateTime? ModifiedAt { get; set; }
+
+        public ICollection<Note> Notes { get; set; }
     }
 }
