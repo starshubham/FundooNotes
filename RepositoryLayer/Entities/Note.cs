@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RepositoryLayer.Entities
 {
@@ -15,7 +17,7 @@ namespace RepositoryLayer.Entities
         public string Body { get; set; }
         public bool IsPinned { get; set; }
         public bool IsDeleted { get; set; }
-        public bool IsArchieved { get; set; }
+        public bool IsArchived { get; set; }
         public DateTime? Reminder { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? ModifiedAt { get; set; }
