@@ -16,37 +16,11 @@ namespace BusinessLayer.Services
             this.userRL = userRL;
         }
 
-        public string ForgetPassword(string email)
-        {
-            try
-            {
-                return userRL.ForgetPassword(email);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
-
         public User Registration(UserRegModel userRegModel)
         {
             try
             {
                 return userRL.Registration(userRegModel);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
-
-        public bool ResetPassword(string email, string password, string confirmPassword)
-        {
-            try
-            {
-                return this.userRL.ResetPassword(email, password, confirmPassword);
             }
             catch (Exception)
             {
@@ -71,5 +45,33 @@ namespace BusinessLayer.Services
                 throw;
             }
         }
+
+        public string ForgetPassword(string email)
+        {
+            try
+            {
+                return userRL.ForgetPassword(email);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        
+
+        public bool ResetPassword(string email, string password, string confirmPassword)
+        {
+            try
+            {
+                return this.userRL.ResetPassword(email, password, confirmPassword);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        
     }
 }
