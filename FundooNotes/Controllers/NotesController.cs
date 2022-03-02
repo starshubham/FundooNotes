@@ -106,18 +106,39 @@ namespace FundooNotes.Controllers
                 var result = this.Nbl.UpdateNote(noteUpdateModel, userid);
                 if (result != null)
                 {
-                    return this.Ok(new { success = true, message = "Notes Updated Successful", data = result });
+                    return this.Ok(new { success = true, message = "Notes Updated Successfully", data = result });
                 }
                 else
                 {
                     return this.NotFound(new { isSuccess = false, message = "No Notes Found" });
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return this.BadRequest(new { success = false, message = "Notes Not Updated" });
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
             }
         }
 
+        [HttpDelete("DeleteNotes")]
+        public IActionResult DeleteNotes(long NoteId)
+        {
+            try
+            {
+                long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
+                var delete = this.Nbl.DeleteNotes(NoteId);
+                if (delete != null)
+                {
+                    return this.Ok(new { success = true, message = "Notes Deleted Successfully" });
+                }
+                else
+                {
+                    return this.NotFound(new { isSuccess = false, message = "No Notes Deleted" });
+                }
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+            }
+        }
     }
 }
