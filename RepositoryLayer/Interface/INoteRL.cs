@@ -8,7 +8,7 @@ namespace RepositoryLayer.Interface
 {
     public interface INoteRL
     {
-        public bool CreateNote(NoteModel noteModel);
+        public bool CreateNote(NoteModel noteModel, long userId);
         public IEnumerable<Note> GetAllNotes();
     }
 }

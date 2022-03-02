@@ -8,7 +8,7 @@ namespace BusinessLayer.Interfaces
 {
     public interface INoteBL
     {
-        public bool CreateNote(NoteModel noteModel);
+        public bool CreateNote(NoteModel noteModel, long userId);
         public IEnumerable<Note> GetAllNotes();
     }
 }
