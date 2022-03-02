@@ -67,15 +67,53 @@ namespace RepositoryLayer.Services
         /// Show all his notes to user
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Note> GetAllNotes()
+        public IEnumerable<Note> GetAllNotes(long userId)
         {
             try
             {
-                return this.fundooContext.NotesTable.ToList();
+                var result = this.fundooContext.NotesTable.ToList().Where(x => x.UserId == userId);
+                return result;
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
+            }
+        }
+
+        public List<Note> GetNote(int NotesId)
+        {
+            var listNote = fundooContext.NotesTable.Where(X => X.NoteId == NotesId).SingleOrDefault();
+            if (listNote != null)
+            {
+                return fundooContext.NotesTable.Where(list => list.NoteId == NotesId).ToList();
+            }
+            return null;
+        }
+
+        public string UpdateNote(NoteModel noteUpdateModel, long NoteId)
+        {
+            try
+            {
+                var update = fundooContext.NotesTable.Where(X => X.NoteId == noteUpdateModel.NoteId).SingleOrDefault();
+                if (update != null)
+                {
+                    update.Title = noteUpdateModel.Title;
+                    update.Body = noteUpdateModel.Body;
+                    update.ModifiedAt = DateTime.Now;
+                    update.Color = noteUpdateModel.Color;
+                    update.BGImage = noteUpdateModel.BGImage;
+
+                    this.fundooContext.SaveChanges();
+                    return "Modified";
+                }
+                else
+                {
+                    return "Not Modified";
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
     }

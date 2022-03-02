@@ -55,26 +55,28 @@ namespace FundooNotes.Controllers
             }
         }
 
-        [HttpGet("DisplayNotes")]
-        public IActionResult GetAllNotes()
+        [HttpGet("DisplayAllNotes")]
+        public IActionResult GetAllNotes(long userId)
         {
             try
             {
-                IEnumerable<Note> notes = Nbl.GetAllNotes();
+                var notes = Nbl.GetAllNotes(userId);
                 if (notes != null)
                 {
-                    return this.Ok(new { status = 200, isSuccess = true, message = " Successful" });
+                    return this.Ok(new { isSuccess = true, message = " All notes found Successfully", data = notes});
 
                 }
                 else
                 {
-                    return this.NotFound(new { status = 404, isSuccess = false, message = "No Notes Found" });
+                    return this.NotFound(new { isSuccess = false, message = "No Notes Found" });
                 }
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException= e.InnerException });
             }
         }
+
+
     }
 }

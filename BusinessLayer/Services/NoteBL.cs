@@ -41,14 +41,40 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<Note> GetAllNotes()
+        public IEnumerable<Note> GetAllNotes(long userId)
         {
             try
             {
-                return this.noteRL.GetAllNotes();
+                return this.noteRL.GetAllNotes(userId);
             }
             catch (Exception)
             {
+                throw;
+            }
+        }
+
+        public List<Note> GetNote(int NotesId)
+        {
+            try
+            {
+                return this.noteRL.GetNote(NotesId);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public string UpdateNote(NoteModel noteUpdateModel, long NoteId)
+        {
+            try
+            {
+                return noteRL.UpdateNote(noteUpdateModel, NoteId);
+            }
+            catch (Exception)
+            {
+
                 throw;
             }
         }
