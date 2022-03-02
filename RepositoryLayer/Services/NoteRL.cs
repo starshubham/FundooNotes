@@ -131,5 +131,34 @@ namespace RepositoryLayer.Services
                 return null;
             }
         }
+
+        public string ArchiveNote(long NoteId)
+        {
+            var response = this.fundooContext.NotesTable.Where(arch => arch.NoteId == NoteId).SingleOrDefault();
+            if (response != null)
+            {
+                response.IsArchived = true;
+                this.fundooContext.SaveChanges();
+                return "Notes Archived";
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public string UnArchiveNote(long NoteId)
+        {
+            var response = this.fundooContext.NotesTable.Where(arch => arch.NoteId == NoteId && arch.IsArchived == true).SingleOrDefault();
+            if (response != null)
+            {
+                response.IsArchived = false;
+                this.fundooContext.SaveChanges();
+                return "Notes Unarchived";
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

@@ -13,5 +13,7 @@ namespace BusinessLayer.Interfaces
         public List<Note> GetNote(int NotesId);
         public string UpdateNote(NoteModel noteUpdateModel, long NoteId);
         public string DeleteNotes(long NoteId);
+        public string ArchiveNote(long NoteId);
+        public string UnArchiveNote(long NoteId);
     }
 }
