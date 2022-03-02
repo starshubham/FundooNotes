@@ -15,8 +15,8 @@ namespace RepositoryLayer.Services
 {
     public class UserRL : IUserRL
     {
-        private readonly FundooContext fundooContext;
-        IConfiguration _Appsettings;
+        private readonly FundooContext fundooContext; //context class is used to query or save data to the database.
+        IConfiguration _Appsettings;  //IConfiguration interface is used to read Settings and Connection Strings from AppSettings.
         public UserRL(FundooContext fundooContext, IConfiguration Appsettings)
         {
             this.fundooContext = fundooContext;

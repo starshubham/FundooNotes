@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace RepositoryLayer.Migrations
 {
-    public partial class Second : Migration
+    public partial class NoteMig : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -23,7 +23,7 @@ namespace RepositoryLayer.Migrations
                     ModifiedAt = table.Column<DateTime>(nullable: true),
                     Color = table.Column<string>(nullable: true),
                     BGImage = table.Column<string>(nullable: true),
-                    UserId = table.Column<long>(nullable: true)
+                    UserId = table.Column<long>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,7 +33,7 @@ namespace RepositoryLayer.Migrations
                         column: x => x.UserId,
                         principalTable: "UserTables",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

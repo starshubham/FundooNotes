@@ -10,8 +10,8 @@ using RepositoryLayer.Context;
 namespace RepositoryLayer.Migrations
 {
     [DbContext(typeof(FundooContext))]
-    [Migration("20220228181203_Second")]
-    partial class Second
+    [Migration("20220302070706_NoteMig")]
+    partial class NoteMig
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -58,7 +58,7 @@ namespace RepositoryLayer.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("UserId")
+                    b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
                     b.HasKey("NoteId");
@@ -104,9 +104,11 @@ namespace RepositoryLayer.Migrations
 
             modelBuilder.Entity("RepositoryLayer.Entities.Note", b =>
                 {
-                    b.HasOne("RepositoryLayer.Entities.User", "User")
+                    b.HasOne("RepositoryLayer.Entities.User", "user")
                         .WithMany("NotesTable")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

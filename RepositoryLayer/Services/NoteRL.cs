@@ -15,13 +15,11 @@ namespace RepositoryLayer.Services
         /// <summary>
         /// Defining Variables
         /// </summary>
-        public readonly FundooContext fundooContext;
-        IConfiguration _configure;
+        public readonly FundooContext fundooContext; //context class is used to query or save data to the database.
 
-        public NoteRL(FundooContext fundooContext, IConfiguration configure)
+        public NoteRL(FundooContext fundooContext)
         {
             this.fundooContext = fundooContext;
-            _configure = configure;
         }
 
         /// <summary>
@@ -29,11 +27,12 @@ namespace RepositoryLayer.Services
         /// </summary>
         /// <param name="noteModel"></param>
         /// <returns></returns>
-        public bool CreateNote(NoteModel noteModel)
+        public bool CreateNote(NoteModel noteModel, long userId)
         {
             try
             {
                 Note newNotes = new Note();
+                newNotes.UserId = userId;
                 newNotes.NoteId = noteModel.NoteId;
                 newNotes.Title = noteModel.Title;
                 newNotes.Body = noteModel.Body;
@@ -44,6 +43,7 @@ namespace RepositoryLayer.Services
                 newNotes.IsPinned = noteModel.IsPinned;
                 newNotes.IsDeleted = noteModel.IsDeleted;
                 newNotes.CreatedAt = DateTime.Now;
+
                 //Adding the data to database
                 this.fundooContext.NotesTable.Add(newNotes);
                 //Save the changes in database
@@ -57,9 +57,9 @@ namespace RepositoryLayer.Services
                     return false;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw;
+                throw new Exception(e.Message);
             }
         }
 
@@ -73,9 +73,9 @@ namespace RepositoryLayer.Services
             {
                 return this.fundooContext.NotesTable.ToList();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw;
+                throw new Exception(e.Message);
             }
         }
     }

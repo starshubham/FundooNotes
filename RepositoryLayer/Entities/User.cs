@@ -29,7 +29,6 @@ namespace RepositoryLayer.Entities
 
         public DateTime? CreatedAt { get; set; }  // ? Allow the Nullable value
         public DateTime? ModifiedAt { get; set; }
-
         public ICollection<Note> NotesTable { get; set; }
     }
 }
