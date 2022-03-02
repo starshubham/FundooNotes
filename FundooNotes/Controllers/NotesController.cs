@@ -140,5 +140,33 @@ namespace FundooNotes.Controllers
                 return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
             }
         }
+
+        [HttpPut("ArchiveNote")]
+        public IActionResult ArchiveNote(long NoteId)
+        {
+            try
+            {
+                var archieve = this.Nbl.ArchiveNote(NoteId);
+                return this.Ok(new { success = true, data = archieve });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+            }
+        }
+
+        [HttpPut("UnArchiveNote")]
+        public IActionResult UnArchiveNote(long NoteId)
+        {
+            try
+            {
+                var unArchieve = this.Nbl.UnArchiveNote(NoteId);
+                return this.Ok(new { success = true, data = unArchieve });
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+            }
+        }
     }
 }

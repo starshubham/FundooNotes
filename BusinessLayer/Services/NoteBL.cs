@@ -74,7 +74,6 @@ namespace BusinessLayer.Services
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
@@ -88,7 +87,29 @@ namespace BusinessLayer.Services
             }
             catch (Exception)
             {
+                throw;
+            }
+        }
 
+        public string ArchiveNote(long NoteId)
+        {
+            try
+            {
+                return noteRL.ArchiveNote(NoteId);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public string UnArchiveNote(long NoteId)
+        {
+            try
+            {
+                return noteRL.UnArchiveNote(NoteId);
+            }
+            catch (Exception)
+            {
                 throw;
             }
         }
