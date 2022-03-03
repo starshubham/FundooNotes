@@ -146,6 +146,7 @@ namespace FundooNotes.Controllers
         {
             try
             {
+                long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
                 var archieve = this.Nbl.ArchiveNote(NoteId);
                 return this.Ok(new { success = true, data = archieve });
             }
@@ -160,6 +161,7 @@ namespace FundooNotes.Controllers
         {
             try
             {
+                long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
                 var unArchieve = this.Nbl.UnArchiveNote(NoteId);
                 return this.Ok(new { success = true, data = unArchieve });
             }
