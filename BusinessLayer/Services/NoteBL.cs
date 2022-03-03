@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces;
 using CommonLayer.Models;
+using Microsoft.AspNetCore.Http;
 using RepositoryLayer.Entities;
 using RepositoryLayer.Interface;
 using System;
@@ -142,6 +143,30 @@ namespace BusinessLayer.Services
             try
             {
                 return noteRL.NoteColor(NoteId, addcolor);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public bool AddBGImage(IFormFile imageURL, long noteid)  // IFormFile comes from using Microsoft.AspNetCore.Http namespace
+        {
+            try
+            {
+                return noteRL.AddBGImage(imageURL, noteid);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public bool DeleteBGImage(long noteid)
+        {
+            try
+            {
+                return noteRL.DeleteBGImage(noteid);
             }
             catch (Exception)
             {
