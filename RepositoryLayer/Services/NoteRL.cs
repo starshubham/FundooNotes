@@ -32,8 +32,8 @@ namespace RepositoryLayer.Services
             try
             {
                 Note newNotes = new Note();
+
                 newNotes.UserId = userId;
-                newNotes.NoteId = noteModel.NoteId;
                 newNotes.Title = noteModel.Title;
                 newNotes.Body = noteModel.Body;
                 newNotes.Reminder = noteModel.Reminder;
@@ -94,8 +94,8 @@ namespace RepositoryLayer.Services
         {
             try
             {
-                var update = fundooContext.NotesTable.Where(X => X.NoteId == noteUpdateModel.NoteId).SingleOrDefault();
-                if (update != null)
+                var update = fundooContext.NotesTable.Where(X => X.NoteId == NoteId).FirstOrDefault();
+                if (update != null && update.NoteId == NoteId)
                 {
                     update.Title = noteUpdateModel.Title;
                     update.Body = noteUpdateModel.Body;
@@ -104,11 +104,11 @@ namespace RepositoryLayer.Services
                     update.BGImage = noteUpdateModel.BGImage;
 
                     this.fundooContext.SaveChanges();
-                    return "Modified";
+                    return "Note is Modified";
                 }
                 else
                 {
-                    return "Not Modified";
+                    return "Note Not Modified";
                 }
             }
             catch (Exception)
@@ -134,12 +134,12 @@ namespace RepositoryLayer.Services
 
         public string ArchiveNote(long NoteId)
         {
-            var response = this.fundooContext.NotesTable.Where(arch => arch.NoteId == NoteId).SingleOrDefault();
+            var response = this.fundooContext.NotesTable.Where(a => a.NoteId == NoteId).SingleOrDefault();
             if (response != null)
             {
                 response.IsArchived = true;
                 this.fundooContext.SaveChanges();
-                return "Notes Archived";
+                return "Note is Archived";
             }
             else
             {
@@ -148,16 +148,50 @@ namespace RepositoryLayer.Services
         }
         public string UnArchiveNote(long NoteId)
         {
-            var response = this.fundooContext.NotesTable.Where(arch => arch.NoteId == NoteId && arch.IsArchived == true).SingleOrDefault();
+            var response = this.fundooContext.NotesTable.Where(a => a.NoteId == NoteId && a.IsArchived == true).SingleOrDefault();
             if (response != null)
             {
                 response.IsArchived = false;
                 this.fundooContext.SaveChanges();
-                return "Notes Unarchived";
+                return "Note is Unarchived";
             }
             else
             {
                 return null;
+            }
+        }
+
+        public string PinNote(long NotesId)
+        {
+            var pin = this.fundooContext.NotesTable.Where(p => p.NoteId == NotesId).FirstOrDefault();
+            if (pin.IsPinned == false)
+            {
+                pin.IsPinned = true;
+                this.fundooContext.SaveChanges();
+                return "Note is Pinned";
+            }
+            else
+            {
+                pin.IsPinned = false;
+                this.fundooContext.SaveChanges();
+                return "Note is Unpinned";
+            }
+        }
+
+        public string TrashNote(long NotesId)
+        {
+            var trashed = this.fundooContext.NotesTable.Where(p => p.NoteId == NotesId).FirstOrDefault();
+            if (trashed.IsDeleted == true)
+            {
+                trashed.IsDeleted = false;
+                this.fundooContext.SaveChanges();
+                return "notes recoverd";
+            }
+            else
+            {
+                trashed.IsDeleted = true;
+                this.fundooContext.SaveChanges();
+                return "note is in trashed";
             }
         }
     }
