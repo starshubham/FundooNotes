@@ -15,5 +15,7 @@ namespace RepositoryLayer.Interface
         public string DeleteNotes(long NoteId);
         public string ArchiveNote(long NoteId);
         public string UnArchiveNote(long NoteId);
+        public string PinNote(long NotesId);
+        public string TrashNote(long NotesId);
     }
 }

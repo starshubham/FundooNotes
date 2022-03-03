@@ -113,5 +113,28 @@ namespace BusinessLayer.Services
                 throw;
             }
         }
+
+        public string PinNote(long NotesId)
+        {
+            try
+            {
+                return noteRL.PinNote(NotesId);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public string TrashNote(long NotesId)
+        {
+            try
+            {
+                return noteRL.TrashNote(NotesId);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }
