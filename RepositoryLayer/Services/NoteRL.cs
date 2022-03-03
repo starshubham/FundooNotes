@@ -194,5 +194,25 @@ namespace RepositoryLayer.Services
                 return "note is in trashed";
             }
         }
+
+        public string NoteColor(long NoteId, string addcolor)
+        {
+
+            var note = this.fundooContext.NotesTable.Where(c => c.NoteId == NoteId).SingleOrDefault();
+            if (note != null)
+            {
+                if (addcolor != null)
+                {
+                    note.Color = addcolor;
+                    this.fundooContext.NotesTable.Update(note);
+                    return this.fundooContext.SaveChanges().ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return "Failed! NoteId is not Present";
+        }
     }
 }
