@@ -18,15 +18,17 @@ namespace FundooNotes.Controllers
     public class NotesController : ControllerBase
     {
         private readonly INoteBL noteBL;
+        private readonly FundooContext fundooContext;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="Nbl"></param>
         /// <param name="funContext"></param>
-        public NotesController(INoteBL noteBL)
+        public NotesController(INoteBL noteBL, FundooContext fundooContext)
         {
             this.noteBL = noteBL;
+            this.fundooContext = fundooContext;
         }
 
         /// <summary>
@@ -227,6 +229,57 @@ namespace FundooNotes.Controllers
             catch (Exception ex)
             {
                 return this.BadRequest(new { Status = 401, isSuccess = false, message = ex.InnerException.Message });
+            }
+        }
+
+        [HttpPut("AddBGImage")]
+        public IActionResult AddBGImage(IFormFile imageURL, long noteid)
+        {
+            try
+            {
+                long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
+                var result = this.noteBL.AddBGImage(imageURL, noteid);
+                if (result == true)
+                {
+                    return this.Ok(new { isSuccess = true, message = "BGImage Added Successfully!", data = result });
+                }
+                else
+                    return this.BadRequest(new { isSuccess = false, message = " BGImage not Added!" });
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = ex.InnerException.Message });
+            }
+        }
+
+        [HttpDelete("RemoveBGImage")]
+        public IActionResult DeleteBGImage(long noteid)
+        {
+            try
+            {
+                long userid = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
+                var NoteBgImage = this.fundooContext.NotesTable.Where(x => x.NoteId == noteid).SingleOrDefault();
+                if(noteid == 0)
+                {
+                    return this.NotFound(new { status = 404, isSuccess = false, Message = "Noteid not entered, Please enter a note id!" });
+                }
+                if(NoteBgImage.UserId == userid)
+                {
+                    var result = this.noteBL.DeleteBGImage(noteid);
+                    if (result)
+                    {
+                        return this.Ok(new { status = 200, isSuccess = true, Message = "BG image deleted successfully!" });
+                    }
+                    return this.BadRequest(new { status = 400, isSuccess = false, Message = "Image not deleted" });
+                }
+                else
+                {
+                    return this.Unauthorized(new { status = 401, isSuccess = false, Message = "Not logged in" });
+                }
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { status = 400, isSuccess = false, Message = e.InnerException.Message });
             }
         }
     }

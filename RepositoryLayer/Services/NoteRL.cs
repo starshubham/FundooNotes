@@ -1,4 +1,7 @@
-﻿using CommonLayer.Models;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using CommonLayer.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using RepositoryLayer.Context;
 using RepositoryLayer.Entities;
@@ -16,10 +19,11 @@ namespace RepositoryLayer.Services
         /// Defining Variables
         /// </summary>
         public readonly FundooContext fundooContext; //context class is used to query or save data to the database.
-
-        public NoteRL(FundooContext fundooContext)
+        IConfiguration _Appsettings;  //IConfiguration interface is used to read Settings and Connection Strings from AppSettings.
+        public NoteRL(FundooContext fundooContext, IConfiguration Appsettings)
         {
             this.fundooContext = fundooContext;
+            _Appsettings = Appsettings;
         }
 
         /// <summary>
@@ -213,6 +217,69 @@ namespace RepositoryLayer.Services
                 }
             }
             return "Failed! NoteId is not Present";
+        }
+
+        public bool AddBGImage(IFormFile imageURL, long noteid)
+        {
+            try
+            {
+                if (noteid > 0)
+                {
+                    var note = this.fundooContext.NotesTable.Where(b => b.NoteId == noteid).SingleOrDefault();
+                    if (note != null)
+                    {
+                        Account acc = new Account(
+                            _Appsettings["Cloudinary:cloud_name"],
+                            _Appsettings["Cloudinary:api_key"],
+                            _Appsettings["Cloudinary:api_secret"]
+                            );
+                        Cloudinary Cld = new Cloudinary(acc);
+                        var path = imageURL.OpenReadStream();
+                        ImageUploadParams upLoadParams = new ImageUploadParams()
+                        {
+                            File = new FileDescription(imageURL.FileName, path)
+                        };
+                        var UploadResult = Cld.Upload(upLoadParams);
+                        note.BGImage = UploadResult.Url.ToString();
+                        note.ModifiedAt = DateTime.Now;
+                        this.fundooContext.SaveChangesAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public bool DeleteBGImage(long noteid)
+        {
+            try
+            {
+                if (noteid > 0)
+                {
+                    var note = this.fundooContext.NotesTable.Where(x => x.NoteId == noteid).SingleOrDefault();
+                    if (note != null)
+                    {
+                        note.BGImage = "";
+                        note.ModifiedAt = DateTime.Now;
+                        this.fundooContext.SaveChangesAsync();
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
