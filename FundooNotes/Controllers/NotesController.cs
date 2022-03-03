@@ -14,7 +14,7 @@ namespace FundooNotes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize]  //user to grant and restrict permissions on Web pages.
     public class NotesController : ControllerBase
     {
         private readonly INoteBL noteBL;
@@ -203,6 +203,26 @@ namespace FundooNotes.Controllers
                     return this.Ok(new { isSuccess = true, message = result });
                 }
                 return this.BadRequest(new { isSuccess = false, message = result });
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = ex.InnerException.Message });
+            }
+        }
+
+        [HttpPut("Color")]
+        public IActionResult NoteColor(long NoteId, string addcolor)
+        {
+            try
+            {
+                long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
+                var color = this.noteBL.NoteColor(NoteId, addcolor);
+                if (color != null)
+                {
+                    return this.Ok(new { isSuccess = true, message = "Color Added!", data = color });
+                }
+                else
+                    return this.BadRequest(new { isSuccess = false, message = " Color not Added!" });
             }
             catch (Exception ex)
             {

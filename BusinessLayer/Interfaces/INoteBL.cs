@@ -17,5 +17,6 @@ namespace BusinessLayer.Interfaces
         public string UnArchiveNote(long NoteId);
         public string PinNote(long NotesId);
         public string TrashNote(long NotesId);
+        public string NoteColor(long NoteId, string addcolor);
     }
 }
