@@ -91,5 +91,20 @@ namespace RepositoryLayer.Services
                 throw;
             }
         }
+
+        public string DeleteLabel(long labelID)
+        {
+            var deleteLabel = fundooContext.LabelsTable.Where(X => X.LabelID == labelID).SingleOrDefault();
+            if (deleteLabel != null)
+            {
+                fundooContext.LabelsTable.Remove(deleteLabel);
+                this.fundooContext.SaveChanges();
+                return "Label Deleted Successfully";
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
