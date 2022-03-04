@@ -50,8 +50,20 @@ namespace RepositoryLayer.Services
             {
 
                 throw;
+            }            
+        }
+
+        public IEnumerable<Collaborator> GetCollabsByNoteId(long noteId)
+        {
+            try
+            {
+                var result = this.fundooContext.CollabsTable.ToList().Where(x => x.NoteId == noteId);
+                return result;
             }
-            
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
     }
 }

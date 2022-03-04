@@ -27,7 +27,7 @@ namespace FundooNotes.Controllers
             this.fundooContext = fundooContext;
         }
 
-        [HttpPost("AddCollab")]
+        [HttpPost("Add")]
         public IActionResult AddCollab(CollabModel collabModel)
         {
             try
@@ -51,6 +51,29 @@ namespace FundooNotes.Controllers
             catch (Exception e)
             {
                 return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+            }
+        }
+
+        [HttpGet("GetByNoteId")]
+        public IActionResult GetCollabsByNoteId(long noteId)
+        {
+            try
+            {
+                long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
+                var notes = collabBL.GetCollabsByNoteId(noteId);
+                if (notes != null)
+                {
+                    return this.Ok(new { isSuccess = true, message = " All Collaborators found Successfully", data = notes });
+
+                }
+                else
+                {
+                    return this.NotFound(new { isSuccess = false, message = "No Collaborator  Found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = ex.InnerException.Message });
             }
         }
     }
