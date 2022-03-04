@@ -10,5 +10,6 @@ namespace RepositoryLayer.Interface
     {
         public bool AddCollab(CollabModel collabModel);
         public IEnumerable<Collaborator> GetCollabsByNoteId(long noteId);
+        public string ReomoveCollab(long collabID);
     }
 }

@@ -47,5 +47,18 @@ namespace BusinessLayer.Services
                 throw;
             }
         }
+
+        public string ReomoveCollab(long collabID)
+        {
+            try
+            {
+                return collabRL.ReomoveCollab(collabID);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }
