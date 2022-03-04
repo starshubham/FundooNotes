@@ -114,5 +114,27 @@ namespace FundooNotes.Controllers
                 return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
             }
         }
+
+        [HttpDelete("Delete")]
+        public IActionResult DeleteLabel(long labelID)
+        {
+            try
+            {
+                long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
+                var delete = this.labelBL.DeleteLabel(labelID);
+                if (delete != null)
+                {
+                    return this.Ok(new { status = 200, isSuccess = true, message = "Label Deleted Successfully" });
+                }
+                else
+                {
+                    return this.NotFound(new { isSuccess = false, message = "Label not found" });
+                }
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+            }
+        }
     }
 }
