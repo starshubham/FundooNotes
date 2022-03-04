@@ -33,8 +33,11 @@ namespace FundooNotes
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<FundooContext>(opts => opts.UseSqlServer(Configuration["ConnectionString:FundooDB"]));
-            services.AddControllers();
-
+            //services.AddControllers();
+            services.AddControllersWithViews()
+            .AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+        );
 
             services.AddSwaggerGen(c =>
             {
@@ -94,6 +97,9 @@ namespace FundooNotes
             // notes service
             services.AddTransient<INoteBL, NoteBL>();
             services.AddTransient<INoteRL, NoteRL>();
+            // Collabs service
+            services.AddTransient<ICollabBL, CollabBL>();
+            services.AddTransient<ICollabRL, CollabRL>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
