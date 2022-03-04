@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces;
 using CommonLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RepositoryLayer.Context;
@@ -12,6 +13,7 @@ namespace FundooNotes.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]  //user to grant and restrict permissions on Web pages.
     public class CollabsController : ControllerBase
     {
         private readonly ICollabBL collabBL;
