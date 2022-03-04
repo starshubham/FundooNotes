@@ -37,6 +37,7 @@ namespace RepositoryLayer.Services
                 newUser.LastName = userRegModel.LastName;
                 newUser.Email = userRegModel.Email;
                 newUser.Password = userRegModel.Password;
+
                 fundooContext.UserTables.Add(newUser);
                 int result = fundooContext.SaveChanges();
                 if (result > 0)

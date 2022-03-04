@@ -232,7 +232,7 @@ namespace FundooNotes.Controllers
             }
         }
 
-        [HttpPut("AddBGImage")]
+        [HttpPut("AddImage")]
         public IActionResult AddBGImage(IFormFile imageURL, long noteid)
         {
             try
@@ -252,7 +252,7 @@ namespace FundooNotes.Controllers
             }
         }
 
-        [HttpDelete("RemoveBGImage")]
+        [HttpDelete("RemoveImage")]
         public IActionResult DeleteBGImage(long noteid)
         {
             try
