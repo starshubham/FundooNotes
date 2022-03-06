@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace FundooNotes.Controllers
 {
+    /// <summary>
+    /// LabelsController connected with BaseController
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]  //user to grant and restrict permissions on Web pages.
@@ -25,11 +28,17 @@ namespace FundooNotes.Controllers
             this.fundooContext = fundooContext;
         }
 
+        /// <summary>
+        /// Created AddLabel api
+        /// </summary>
+        /// <param name="labelModel"></param>
+        /// <returns></returns>
         [HttpPost("Create")]
-        public IActionResult AddLabel(LabelModel labelModel)
+        public IActionResult AddLabel(LabelModel labelModel)  // IActionResult -- how the server should respond to the request.
         {
             try
             {
+                //checking if the user has a claim to access.
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
                 var labelNote = this.fundooContext.NotesTable.Where(x => x.NoteId == labelModel.NoteId).SingleOrDefault();
                 if (labelNote.UserId == userid)
@@ -52,6 +61,11 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// Created GetAllLabels api
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         [HttpGet("GetAll")]
         public IActionResult GetAllLabels(long userId)
         {
@@ -73,13 +87,18 @@ namespace FundooNotes.Controllers
             }
         }
 
-        [HttpGet("GetByLabelID")]
-        public IActionResult GetByLabelID(long labelID)
+        /// <summary>
+        /// api for Get Labels by noteId
+        /// </summary>
+        /// <param name="NotesId"></param>
+        /// <returns></returns>
+        [HttpGet("GetByNotesId")]
+        public IActionResult GetlabelByNotesId(long NotesId)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var labels = this.labelBL.GetByLabelID(labelID);
+                var labels = this.labelBL.GetlabelByNotesId(NotesId);
                 if (labels != null)
                 {
                     return this.Ok(new { status = 200, isSuccess = true, message = " Specific label found Successfully", data = labels });
@@ -93,6 +112,12 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// api for update a label by labelId
+        /// </summary>
+        /// <param name="labelModel"></param>
+        /// <param name="labelID"></param>
+        /// <returns></returns>
         [HttpPut("Update")]
         public IActionResult UpdateLabel(LabelModel labelModel, long labelID)
         {
@@ -115,6 +140,11 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// api for delete a label by labelID
+        /// </summary>
+        /// <param name="labelID"></param>
+        /// <returns></returns>
         [HttpDelete("Delete")]
         public IActionResult DeleteLabel(long labelID)
         {
