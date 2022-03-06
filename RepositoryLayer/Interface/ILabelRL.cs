@@ -10,7 +10,7 @@ namespace RepositoryLayer.Interface
     {
         public bool AddLabel(LabelModel labelModel);
         public IEnumerable<Label> GetAllLabels(long userId);
-        public List<Label> GetByLabelID(long labelID);
+        public List<Label> GetlabelByNotesId(long NotesId);
         public string UpdateLabel(LabelModel labelModel, long labelID);
         public string DeleteLabel(long labelID);
     }

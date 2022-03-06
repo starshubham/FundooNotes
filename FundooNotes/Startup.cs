@@ -69,7 +69,7 @@ namespace FundooNotes
 
                 });
             });
-            //var jwtSection = Configuration.GetSection("Jwt:Key");
+            
             services.AddAuthentication(option =>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

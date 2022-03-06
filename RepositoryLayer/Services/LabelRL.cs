@@ -17,13 +17,20 @@ namespace RepositoryLayer.Services
             this.fundooContext = fundooContext;
         }
 
+        /// <summary>
+        /// Created AddLabel Method
+        /// </summary>
+        /// <param name="labelModel"></param>
+        /// <returns></returns>
         public bool AddLabel(LabelModel labelModel)
         {
             try
             {
+                // checking with the notestable db to find NoteId
                 var note = fundooContext.NotesTable.Where(x => x.NoteId == labelModel.NoteId).FirstOrDefault();
                 if (note != null)
                 {
+                    // Entity class Instance
                     Label label = new Label();
                     label.LabelName = labelModel.LabelName;
                     label.NoteId = note.NoteId;
@@ -45,6 +52,11 @@ namespace RepositoryLayer.Services
             }
         }
 
+        /// <summary>
+        /// Method to get all Labels
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public IEnumerable<Label> GetAllLabels(long userId)
         {
             try
@@ -58,16 +70,30 @@ namespace RepositoryLayer.Services
             }
         }
 
-        public List<Label> GetByLabelID(long labelID)
+        /// <summary>
+        /// Method to get labels by NotesId
+        /// </summary>
+        /// <param name="NotesId"></param>
+        /// <returns></returns>
+        public List<Label> GetlabelByNotesId(long NotesId)
         {
-            var label = fundooContext.LabelsTable.Where(X => X.LabelID == labelID).SingleOrDefault();
-            if (label != null)
+            try
             {
-                return fundooContext.LabelsTable.Where(X => X.LabelID == labelID).ToList();
+                var response = this.fundooContext.LabelsTable.Where(x => x.NoteId == NotesId).ToList();
+                return response;
             }
-            return null;
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
+        /// <summary>
+        /// Method to updateLabel by labelID
+        /// </summary>
+        /// <param name="labelModel"></param>
+        /// <param name="labelID"></param>
+        /// <returns></returns>
         public string UpdateLabel(LabelModel labelModel, long labelID)
         {
             try
@@ -92,6 +118,11 @@ namespace RepositoryLayer.Services
             }
         }
 
+        /// <summary>
+        /// Method to DeleteLabel By LabelID
+        /// </summary>
+        /// <param name="labelID"></param>
+        /// <returns></returns>
         public string DeleteLabel(long labelID)
         {
             var deleteLabel = fundooContext.LabelsTable.Where(X => X.LabelID == labelID).SingleOrDefault();
