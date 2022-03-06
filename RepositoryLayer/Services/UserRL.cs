@@ -36,7 +36,8 @@ namespace RepositoryLayer.Services
                 newUser.FirstName = userRegModel.FirstName;
                 newUser.LastName = userRegModel.LastName;
                 newUser.Email = userRegModel.Email;
-                newUser.Password = userRegModel.Password;
+                newUser.Password = EncryptPassword(userRegModel.Password);
+                newUser.CreatedAt = DateTime.Now;
 
                 fundooContext.UserTables.Add(newUser);
                 int result = fundooContext.SaveChanges();
@@ -52,6 +53,38 @@ namespace RepositoryLayer.Services
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Method for EncryptPassword
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        private string EncryptPassword(string password)
+        {
+            string enteredpassword = "";
+            byte[] hide = new byte[password.Length];
+            hide = Encoding.UTF8.GetBytes(password);
+            enteredpassword = Convert.ToBase64String(hide);
+            return enteredpassword;
+        }
+
+        /// <summary>
+        /// Method for DecryptPassword
+        /// </summary>
+        /// <param name="encryptpwd"></param>
+        /// <returns></returns>
+        private string Decryptpassword(string encryptpwd)
+        {
+            string decryptpwd = string.Empty;
+            UTF8Encoding encodepwd = new UTF8Encoding();
+            Decoder Decode = encodepwd.GetDecoder();
+            byte[] todecode_byte = Convert.FromBase64String(encryptpwd);
+            int charCount = Decode.GetCharCount(todecode_byte, 0, todecode_byte.Length);
+            char[] decoded_char = new char[charCount];
+            Decode.GetChars(todecode_byte, 0, todecode_byte.Length, decoded_char, 0);
+            decryptpwd = new String(decoded_char);
+            return decryptpwd;
         }
 
         /// <summary>

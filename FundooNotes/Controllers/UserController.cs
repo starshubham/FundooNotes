@@ -7,17 +7,17 @@ using System.Security.Claims;
 
 namespace FundooNotes.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    [Route("api/[controller]")]  // Route is for matching incoming HTTP requests.
+    [ApiController]  // To Enable Routing Requirements.
     public class UserController : ControllerBase
     {
-        private readonly IUserBL userBL;
+        private readonly IUserBL userBL;  // can only be assigned a value from within the constructor(s) of a class.
         public UserController(IUserBL userBL)
         {
             this.userBL = userBL;
         }
         [HttpPost("Register")]
-        public IActionResult addUser(UserRegModel userRegModel)
+        public IActionResult addUser(UserRegModel userRegModel)  //IActionResult lets you return both data and HTTP codes.
         {
             try
             {
