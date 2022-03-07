@@ -57,8 +57,7 @@ namespace BusinessLayer.Services
 
                 throw;
             }
-        }
-        
+        }       
 
         public bool ResetPassword(string email, string password, string confirmPassword)
         {
@@ -72,6 +71,18 @@ namespace BusinessLayer.Services
                 throw;
             }
         }
-        
+
+        public IEnumerable<User> GetAllUsers()
+        {
+            try
+            {
+                return this.userRL.GetAllUsers();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }
