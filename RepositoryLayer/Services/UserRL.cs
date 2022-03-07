@@ -74,7 +74,7 @@ namespace RepositoryLayer.Services
         /// </summary>
         /// <param name="encryptpwd"></param>
         /// <returns></returns>
-        private string Decryptpassword(string encryptpwd)
+        private string DecryptPassword(string encryptpwd)
         {
             string decryptpwd = string.Empty;
             UTF8Encoding encodepwd = new UTF8Encoding();
@@ -96,8 +96,8 @@ namespace RepositoryLayer.Services
         {
             try
             {
-                var existingLogin = this.fundooContext.UserTables.Where(X => X.Email == userLog.Email && X.Password == userLog.Password).FirstOrDefault();
-                if (existingLogin != null)
+                var existingLogin = this.fundooContext.UserTables.Where(X => X.Email == userLog.Email).FirstOrDefault();
+                if (DecryptPassword(existingLogin.Password) == userLog.Password)
                 {
                     LoginResponseModel login = new LoginResponseModel();
                     string token = GenerateSecurityToken(existingLogin.Email, existingLogin.Id);

@@ -42,6 +42,18 @@ namespace BusinessLayer.Services
             }
         }
 
+        public IEnumerable<Note> GetEveryoneNotes()
+        {
+            try
+            {
+                return this.noteRL.GetEveryoneNotes();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public IEnumerable<Note> GetAllNotes(long userId)
         {
             try
