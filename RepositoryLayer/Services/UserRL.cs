@@ -123,7 +123,7 @@ namespace RepositoryLayer.Services
         }
 
         /// <summary>
-        /// Generating Security Token
+        /// Method for Generating Security Token
         /// </summary>
         /// <param name="Email"></param>
         /// <param name="Id"></param>
@@ -144,6 +144,11 @@ namespace RepositoryLayer.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        /// <summary>
+        /// Method for forget password
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         public string ForgetPassword(string email)
         {
             try
@@ -165,6 +170,13 @@ namespace RepositoryLayer.Services
             }
         }
 
+        /// <summary>
+        /// Method for Reset password
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <param name="confirmPassword"></param>
+        /// <returns></returns>
         public bool ResetPassword(string email, string password, string confirmPassword)
         {
             try
@@ -186,6 +198,10 @@ namespace RepositoryLayer.Services
             }
         }
 
+        /// <summary>
+        /// Method for Getting all users
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<User> GetAllUsers()
         {
             try

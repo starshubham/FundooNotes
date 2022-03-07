@@ -3,10 +3,16 @@ using CommonLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using RepositoryLayer.Context;
+using RepositoryLayer.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FundooNotes.Controllers
@@ -18,15 +24,19 @@ namespace FundooNotes.Controllers
     {
         private readonly ICollabBL collabBL;
         private readonly FundooContext fundooContext;
+        private readonly IMemoryCache memoryCache;
+        private readonly IDistributedCache distributedCache;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="collabBL"></param>
-        public CollabsController(ICollabBL collabBL, FundooContext fundooContext)
+        public CollabsController(ICollabBL collabBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             this.collabBL = collabBL;
             this.fundooContext = fundooContext;
+            this.memoryCache = memoryCache;
+            this.distributedCache = distributedCache;
         }
 
         [HttpPost("Add")]
@@ -56,16 +66,64 @@ namespace FundooNotes.Controllers
             }
         }
 
+        [HttpGet("GetAll")]
+        public IActionResult GetAllCollabs()
+        {
+            try
+            {
+                long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
+                var collabs = collabBL.GetAllCollabs();
+                if (collabs != null)
+                {
+                    return this.Ok(new { isSuccess = true, message = " All Collaborators found Successfully", data = collabs });
+
+                }
+                else
+                {
+                    return this.NotFound(new { isSuccess = false, message = "No Collaborator  Found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = ex.InnerException.Message });
+            }
+        }
+
+        [HttpGet("redis")]
+        public async Task<IActionResult> GetAllCollaboratorUsingRedisCache()
+        {
+            var cacheKey = "CollabsList";
+            string serializedList;
+            var CollabsList = new List<Collaborator>();
+            var redisCollabsList = await distributedCache.GetAsync(cacheKey);
+            if (redisCollabsList != null)
+            {
+                serializedList = Encoding.UTF8.GetString(redisCollabsList);
+                CollabsList = JsonConvert.DeserializeObject<List<Collaborator>>(serializedList);
+            }
+            else
+            {
+                CollabsList = await fundooContext.CollabsTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
+                serializedList = JsonConvert.SerializeObject(CollabsList);
+                redisCollabsList = Encoding.UTF8.GetBytes(serializedList);
+                var options = new DistributedCacheEntryOptions()
+                    .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+                await distributedCache.SetAsync(cacheKey, redisCollabsList, options);
+            }
+            return Ok(CollabsList);
+        }
+
         [HttpGet("GetByNoteId")]
         public IActionResult GetCollabsByNoteId(long noteId)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
-                var notes = collabBL.GetCollabsByNoteId(noteId);
-                if (notes != null)
+                var collabs = collabBL.GetCollabsByNoteId(noteId);
+                if (collabs != null)
                 {
-                    return this.Ok(new { isSuccess = true, message = " All Collaborators found Successfully", data = notes });
+                    return this.Ok(new { isSuccess = true, message = " All Collaborators found Successfully", data = collabs });
 
                 }
                 else

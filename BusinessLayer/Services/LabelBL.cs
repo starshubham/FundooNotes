@@ -33,11 +33,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<Label> GetAllLabels(long userId)
+        public IEnumerable<Label> GetAllLabels()
         {
             try
             {
-                return labelRL.GetAllLabels(userId);
+                return labelRL.GetAllLabels();
             }
             catch (Exception)
             {

@@ -35,6 +35,18 @@ namespace BusinessLayer.Services
             }
         }
 
+        public IEnumerable<Collaborator> GetAllCollabs()
+        {
+            try
+            {
+                return collabRL.GetAllCollabs();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
         public IEnumerable<Collaborator> GetCollabsByNoteId(long noteId)
         {
             try

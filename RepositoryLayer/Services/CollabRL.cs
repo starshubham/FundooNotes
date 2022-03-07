@@ -19,6 +19,11 @@ namespace RepositoryLayer.Services
             this.fundooContext = fundooContext;            
         }
 
+        /// <summary>
+        /// Method for adding Members to collaboration
+        /// </summary>
+        /// <param name="collabModel"></param>
+        /// <returns></returns>
         public bool AddCollab(CollabModel collabModel)
         {
             try
@@ -53,6 +58,28 @@ namespace RepositoryLayer.Services
             }            
         }
 
+        /// <summary>
+        /// Method for getting all collaborator
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Collaborator> GetAllCollabs()
+        {
+            try
+            {
+                var result = this.fundooContext.CollabsTable.ToList();
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Method for getting collaborator using NoteId
+        /// </summary>
+        /// <param name="noteId"></param>
+        /// <returns></returns>
         public IEnumerable<Collaborator> GetCollabsByNoteId(long noteId)
         {
             try
@@ -66,6 +93,11 @@ namespace RepositoryLayer.Services
             }
         }
 
+        /// <summary>
+        /// Method for Remove member from collaboration
+        /// </summary>
+        /// <param name="collabID"></param>
+        /// <returns></returns>
         public string ReomoveCollab (long collabID)
         {
             var collab = fundooContext.CollabsTable.Where(X => X.CollabID == collabID).SingleOrDefault();
