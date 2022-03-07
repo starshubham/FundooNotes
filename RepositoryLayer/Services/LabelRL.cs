@@ -57,11 +57,11 @@ namespace RepositoryLayer.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public IEnumerable<Label> GetAllLabels(long userId)
+        public IEnumerable<Label> GetAllLabels()
         {
             try
             {
-                var result = this.fundooContext.LabelsTable.ToList().Where(x => x.UserId == userId);
+                var result = this.fundooContext.LabelsTable.ToList();
                 return result;
             }
             catch (Exception e)

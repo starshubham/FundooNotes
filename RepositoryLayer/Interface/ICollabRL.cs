@@ -9,6 +9,7 @@ namespace RepositoryLayer.Interface
     public interface ICollabRL
     {
         public bool AddCollab(CollabModel collabModel);
+        public IEnumerable<Collaborator> GetAllCollabs();
         public IEnumerable<Collaborator> GetCollabsByNoteId(long noteId);
         public string ReomoveCollab(long collabID);
     }

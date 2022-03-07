@@ -9,6 +9,7 @@ namespace BusinessLayer.Interfaces
     public interface ICollabBL
     {
         public bool AddCollab(CollabModel collabModel);
+        public IEnumerable<Collaborator> GetAllCollabs();
         public IEnumerable<Collaborator> GetCollabsByNoteId(long noteId);
         public string ReomoveCollab(long collabID);
     }
