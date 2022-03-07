@@ -21,5 +21,6 @@ namespace BusinessLayer.Interfaces
         public string NoteColor(long NoteId, string addcolor);
         public bool AddBGImage(IFormFile imageURL, long noteid);  // IFormFile comes from using Microsoft.AspNetCore.Http namespace
         public bool DeleteBGImage(long noteid);
+        public IEnumerable<Note> GetEveryoneNotes();
     }
 }

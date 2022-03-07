@@ -3,6 +3,8 @@ using CommonLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using RepositoryLayer.Context;
 using RepositoryLayer.Entities;
 using System;
@@ -19,16 +21,21 @@ namespace FundooNotes.Controllers
     {
         private readonly INoteBL noteBL;
         private readonly FundooContext fundooContext;
+        private readonly IMemoryCache memoryCache;
+        private readonly IDistributedCache distributedCache;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="Nbl"></param>
         /// <param name="funContext"></param>
-        public NotesController(INoteBL noteBL, FundooContext fundooContext)
+        public NotesController(INoteBL noteBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             this.noteBL = noteBL;
             this.fundooContext = fundooContext;
+            this.memoryCache = memoryCache;
+            this.distributedCache = distributedCache;
+
         }
 
         /// <summary>
@@ -79,6 +86,29 @@ namespace FundooNotes.Controllers
                 return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException= e.InnerException });
             }
         }
+
+        [HttpGet("DisplayEveryone")]
+        public IActionResult GetEveryoneNotes()
+        {
+            try
+            {
+                var notes = noteBL.GetEveryoneNotes();
+                if (notes != null)
+                {
+                    return this.Ok(new { isSuccess = true, message = " All notes found Successfully", data = notes });
+
+                }
+                else
+                {
+                    return this.NotFound(new { isSuccess = false, message = "No Notes Found" });
+                }
+            }
+            catch (Exception e)
+            {
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+            }
+        }
+
 
         [HttpGet("{Id}/Display")]
         public IActionResult GetNote(int NotesId)

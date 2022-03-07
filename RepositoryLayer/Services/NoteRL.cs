@@ -68,7 +68,24 @@ namespace RepositoryLayer.Services
         }
 
         /// <summary>
-        /// Show all his notes to user
+        /// Show all notes of all users
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Note> GetEveryoneNotes()
+        {
+            try
+            {
+                var result = this.fundooContext.NotesTable.ToList();
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Show all his notes of particular user
         /// </summary>
         /// <returns></returns>
         public IEnumerable<Note> GetAllNotes(long userId)
