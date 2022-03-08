@@ -1,28 +1,32 @@
-﻿using BusinessLayer.Interfaces;
-using CommonLayer.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using RepositoryLayer.Context;
-using RepositoryLayer.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿//-----------------------------------------------------------------------
+// <copyright file="LabelsController.cs" company="CompanyName">
+//     Company copyright tag.
+// </copyright>
+//-----------------------------------------------------------------------
 namespace FundooNotes.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using BusinessLayer.Interfaces;
+    using CommonLayer.Models;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Distributed;
+    using Microsoft.Extensions.Caching.Memory;
+    using Newtonsoft.Json;
+    using RepositoryLayer.Context;
+    using RepositoryLayer.Entities;   
+
     /// <summary>
     /// LabelsController connected with BaseController
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]  //user to grant and restrict permissions on Web pages.
+    [Authorize]  // user to grant and restrict permissions on Web pages.
     public class LabelsController : ControllerBase
     {
         private readonly ILabelBL labelBL;
@@ -30,6 +34,13 @@ namespace FundooNotes.Controllers
         private readonly IMemoryCache memoryCache;
         private readonly IDistributedCache distributedCache;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LabelsController"/> class.
+        /// </summary>
+        /// <param name="labelBL">labelBL parameter</param>
+        /// <param name="fundooContext">fundooContext parameter</param>
+        /// <param name="memoryCache">memoryCache parameter</param>
+        /// <param name="distributedCache">distributedCache parameter</param>
         public LabelsController(ILabelBL labelBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             this.labelBL = labelBL;
@@ -39,16 +50,15 @@ namespace FundooNotes.Controllers
         }
 
         /// <summary>
-        /// Created AddLabel api
+        /// API for adding a new label
         /// </summary>
-        /// <param name="labelModel"></param>
-        /// <returns></returns>
+        /// <param name="labelModel">labelModel parameter</param>
         [HttpPost("Create")]
         public IActionResult AddLabel(LabelModel labelModel)  // IActionResult -- how the server should respond to the request.
         {
             try
             {
-                //checking if the user has a claim to access.
+                // checking if the user has a claim to access.
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
                 var labelNote = this.fundooContext.NotesTable.Where(x => x.NoteId == labelModel.NoteId).SingleOrDefault();
                 if (labelNote.UserId == userid)
@@ -72,15 +82,15 @@ namespace FundooNotes.Controllers
         }
 
         /// <summary>
-        /// Created GetAll api
+        /// API for getting all labels
         /// </summary>
-        /// <returns></returns>
+        /// <returns>returns all labels</returns>
         [HttpGet("GetAll")]
         public IActionResult GetAllLabels()
         {
             try
             {
-                var labels = labelBL.GetAllLabels();
+                var labels = this.labelBL.GetAllLabels();
                 if (labels != null)
                 {
                     return this.Ok(new { status = 200, isSuccess = true, Message = " All labels found Successfully", data = labels });
@@ -96,13 +106,17 @@ namespace FundooNotes.Controllers
             }
         }
 
-        [HttpGet("redis")]
+        /// <summary>
+        /// API for Getting all notes using redis cache
+        /// </summary>
+        /// <returns>returns all notes</returns>
+        [HttpGet("Redis")]
         public async Task<IActionResult> GetAllNotesUsingRedisCache()
         {
             var cacheKey = "LabelsList";
             string serializedLabelsList;
             var LabelsList = new List<Label>();
-            var redisLabelsList = await distributedCache.GetAsync(cacheKey);
+            var redisLabelsList = await this.distributedCache.GetAsync(cacheKey);
             if (redisLabelsList != null)
             {
                 serializedLabelsList = Encoding.UTF8.GetString(redisLabelsList);
@@ -116,17 +130,18 @@ namespace FundooNotes.Controllers
                 var options = new DistributedCacheEntryOptions()
                     .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
                     .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-                await distributedCache.SetAsync(cacheKey, redisLabelsList, options);
+                await this.distributedCache.SetAsync(cacheKey, redisLabelsList, options);
             }
-            return Ok(LabelsList);
+
+            return this.Ok(LabelsList);
         }
 
         /// <summary>
-        /// api for Get Labels by noteId
+        /// API for Get Labels by noteId
         /// </summary>
-        /// <param name="NotesId"></param>
-        /// <returns></returns>
-        [HttpGet("GetByNotesId")]
+        /// <param name="NotesId">NotesId parameter</param>
+        /// <returns>returns all labels using notesId</returns>
+        [HttpGet("{NotesId}/Get")]
         public IActionResult GetlabelByNotesId(long NotesId)
         {
             try
@@ -138,7 +153,9 @@ namespace FundooNotes.Controllers
                     return this.Ok(new { status = 200, isSuccess = true, message = " Specific label found Successfully", data = labels });
                 }
                 else
+                {
                     return this.NotFound(new { isSuccess = false, message = "Specific label not Found" });
+                }                   
             }
             catch (Exception e)
             {
@@ -147,11 +164,11 @@ namespace FundooNotes.Controllers
         }
 
         /// <summary>
-        /// api for update a label by labelId
+        /// API for update a label by labelId
         /// </summary>
-        /// <param name="labelModel"></param>
-        /// <param name="labelID"></param>
-        /// <returns></returns>
+        /// <param name="labelModel">labelModel parameter</param>
+        /// <param name="labelID">labelID parameter</param>
+        /// <returns>returns for updated labels</returns>
         [HttpPut("Update")]
         public IActionResult UpdateLabel(LabelModel labelModel, long labelID)
         {
@@ -170,15 +187,15 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
         /// <summary>
-        /// api for delete a label by labelID
+        /// API for delete a label by labelID
         /// </summary>
-        /// <param name="labelID"></param>
-        /// <returns></returns>
+        /// <param name="labelID">labelID parameter</param>
+        /// <returns>Delete a label</returns>
         [HttpDelete("Delete")]
         public IActionResult DeleteLabel(long labelID)
         {
@@ -197,7 +214,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
     }

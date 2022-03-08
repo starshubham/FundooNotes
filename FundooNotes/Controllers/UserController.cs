@@ -1,30 +1,47 @@
-﻿using BusinessLayer.Interfaces;
-using CommonLayer.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using RepositoryLayer.Context;
-using RepositoryLayer.Entities;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿//-----------------------------------------------------------------------
+// <copyright file="UserController.cs" company="CompanyName">
+//     Company copyright tag.
+// </copyright>
+//-----------------------------------------------------------------------
 
 namespace FundooNotes.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using System.Text;
+    using System.Threading.Tasks;
+    using BusinessLayer.Interfaces;
+    using CommonLayer.Models;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Distributed;
+    using Microsoft.Extensions.Caching.Memory;
+    using Newtonsoft.Json;
+    using RepositoryLayer.Context;
+    using RepositoryLayer.Entities;
+    
+    /// <summary>
+    /// UserController class
+    /// </summary>
     [Route("api/[controller]")]  // Route is for matching incoming HTTP requests.
     [ApiController]  // To Enable Routing Requirements.
     public class UserController : ControllerBase
     {
-        private readonly IUserBL userBL;  // can only be assigned a value from within the constructor(s) of a class.
+        // can only be assigned a value from within the constructor(s) of a class.
+        private readonly IUserBL userBL;  
         private readonly FundooContext fundooContext;
         private readonly IMemoryCache memoryCache;
         private readonly IDistributedCache distributedCache;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserController"/>" class.
+        /// </summary>
+        /// <param name="userBL">parameter</param>
+        /// <param name="fundooContext">parameter</param>
+        /// <param name="memoryCache">parameter</param>
+        /// <param name="distributedCache">parameter</param>
         public UserController(IUserBL userBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             this.userBL = userBL;
@@ -32,12 +49,18 @@ namespace FundooNotes.Controllers
             this.memoryCache = memoryCache;
             this.distributedCache = distributedCache;
         }
+
+        /// <summary>
+        /// API for Register a User
+        /// </summary>
+        /// <param name="userRegModel">parameter</param>
+        /// <returns>returns registered user</returns>
         [HttpPost("Register")]
         public IActionResult addUser(UserRegModel userRegModel)  //IActionResult lets you return both data and HTTP codes.
         {
             try
             {
-                var result = userBL.Registration(userRegModel);
+                var result = this.userBL.Registration(userRegModel);
                 if (result != null)
                 {
                     return this.Ok(new { success = true, message = "Registration Successful", data = result });
@@ -45,43 +68,49 @@ namespace FundooNotes.Controllers
                 else
                     return this.BadRequest(new { success = false, message = "Registration Unsuccessful" });
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw;
+                return this.BadRequest(new { isSuccess = false, message = e.InnerException.Message });
             }
         }
 
 
         /// <summary>
-        /// Get all Login Data
+        /// API for Get all Login Data
         /// </summary>
         /// <param name="userLog"></param>
-        /// <returns></returns>
+        /// <returns>returns login data</returns>
         [HttpPost("Login")]
         public IActionResult UserLogin(UserLoginModel userLog)
         {
             try
             {
-                var result = userBL.UserLogin(userLog);
+                var result = this.userBL.UserLogin(userLog);
                 if (result != null)
                 {
-                    return this.Ok(new { isSuccess = true, message = "Login Successful", data = result });
+                    return this.Ok(new { isSuccess = true, message = "Login Successful", data = result.Token });
                 }
                 else
+                {
                     return this.BadRequest(new { isSuccess = false, message = "Login Unsuccessful" });
+                }                  
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                throw;
+                return this.BadRequest(new { isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API for get all the users
+        /// </summary>
+        /// <returns>returns all users</returns>
         [HttpGet("GetAll")]
         public IActionResult GetAllUsers()
         {
             try
             {
-                var users = userBL.GetAllUsers();
+                var users = this.userBL.GetAllUsers();
                 if (users != null)
                 {
                     return this.Ok(new { isSuccess = true, message = " All users found Successfully", data = users });
@@ -98,13 +127,17 @@ namespace FundooNotes.Controllers
             }
         }
 
-        [HttpGet("redis")]
+        /// <summary>
+        /// API for Redis Cache
+        /// </summary>
+        /// <returns>returns all users</returns>
+        [HttpGet("Redis")]
         public async Task<IActionResult> GetAllUsersUsingRedisCache()
         {
             var cacheKey = "UsersList";
             string serializedUsersList;
             var UsersList = new List<User>();
-            var redisUsersList = await distributedCache.GetAsync(cacheKey);
+            var redisUsersList = await this.distributedCache.GetAsync(cacheKey);
             if (redisUsersList != null)
             {
                 serializedUsersList = Encoding.UTF8.GetString(redisUsersList);
@@ -118,46 +151,56 @@ namespace FundooNotes.Controllers
                 var options = new DistributedCacheEntryOptions()
                     .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
                     .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-                await distributedCache.SetAsync(cacheKey, redisUsersList, options);
+                await this.distributedCache.SetAsync(cacheKey, redisUsersList, options);
             }
             return Ok(UsersList);
         }
 
+        /// <summary>
+        /// API for Forget Password
+        /// </summary>
+        /// <param name="email">parameter</param>
+        /// <returns>returns a token</returns>
         [HttpPost("ForgotPassword")]
         public IActionResult ForgotPassword(string email)
         {
             try
             {
-                var result = userBL.ForgetPassword(email);
+                var result = this.userBL.ForgetPassword(email);
                 if (result != null)
                 {
                     return this.Ok(new { isSuccess = true, message = "Send Forget Password Link"});
                 }
                 else
+                {
                     return this.BadRequest(new { isSuccess = false, message = "Email not Found" });
+                }                  
             }
             catch (Exception e)
             {
-
                 return this.BadRequest(new { isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API for Reset Password
+        /// </summary>
+        /// <param name="password">parameter</param>
+        /// <param name="confirmPassword">parameter</param>
+        /// <returns>returns a reseted password</returns>
         [Authorize]
-        [HttpPost("ResetPassword")]
-        
+        [HttpPost("ResetPassword")]       
         public IActionResult ResetPassword(string password, string confirmPassword)
         {
             try
             {
                 var email = User.FindFirst(ClaimTypes.Email).Value.ToString();
-                var result = userBL.ResetPassword(email, password, confirmPassword);
+                var result = this.userBL.ResetPassword(email, password, confirmPassword);
                 return this.Ok(new { isSuccess = true, message = "Reset Password Successfully" });
                             
             }
             catch (Exception e)
             {
-
                 return this.BadRequest(new { isSuccess = false, message = e.InnerException.Message });
             }
         }
