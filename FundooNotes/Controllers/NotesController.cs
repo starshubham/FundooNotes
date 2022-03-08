@@ -23,7 +23,7 @@ namespace FundooNotes.Controllers
     using RepositoryLayer.Entities;
     
     /// <summary>
-    /// NotesController Class for creating api
+    /// NotesController Class for creating API
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
@@ -32,7 +32,6 @@ namespace FundooNotes.Controllers
     {
         private readonly INoteBL noteBL;
         private readonly FundooContext fundooContext;
-        private readonly IMemoryCache memoryCache;
         private readonly IDistributedCache distributedCache;
 
         /// <summary>
@@ -40,13 +39,11 @@ namespace FundooNotes.Controllers
         /// </summary>
         /// <param name="noteBL">noteBL parameter</param>
         /// <param name="fundooContext">fundooContext parameter</param>
-        /// <param name="memoryCache">memoryCache parameter</param>
         /// <param name="distributedCache">distributedCache parameter</param>
-        public NotesController(INoteBL noteBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
+        public NotesController(INoteBL noteBL, FundooContext fundooContext, IDistributedCache distributedCache)
         {
             this.noteBL = noteBL;
             this.fundooContext = fundooContext;
-            this.memoryCache = memoryCache;
             this.distributedCache = distributedCache;
         }
 
@@ -73,7 +70,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
@@ -90,7 +87,7 @@ namespace FundooNotes.Controllers
                 var notes = this.noteBL.GetAllNotes(userId);
                 if (notes != null)
                 {
-                    return this.Ok(new { isSuccess = true, message = " All notes found Successfully", data = notes});
+                    return this.Ok(new { isSuccess = true, message = " All notes found Successfully", data = notes });
                 }
                 else
                 {
@@ -99,7 +96,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
@@ -124,7 +121,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
@@ -137,38 +134,39 @@ namespace FundooNotes.Controllers
         {
             var cacheKey = "NotesList";
             string serializedNotesList;
-            var NotesList = new List<Note>();
+            var notesList = new List<Note>();
             var redisNotesList = await this.distributedCache.GetAsync(cacheKey);
             if (redisNotesList != null)
             {
                 serializedNotesList = Encoding.UTF8.GetString(redisNotesList);
-                NotesList = JsonConvert.DeserializeObject<List<Note>>(serializedNotesList);
+                notesList = JsonConvert.DeserializeObject<List<Note>>(serializedNotesList);
             }
             else
             {
-                NotesList = await this.fundooContext.NotesTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
-                serializedNotesList = JsonConvert.SerializeObject(NotesList);
+                notesList = await this.fundooContext.NotesTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
+                serializedNotesList = JsonConvert.SerializeObject(notesList);
                 redisNotesList = Encoding.UTF8.GetBytes(serializedNotesList);
                 var options = new DistributedCacheEntryOptions()
                     .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
                     .SetSlidingExpiration(TimeSpan.FromMinutes(2));
                 await this.distributedCache.SetAsync(cacheKey, redisNotesList, options);
             }
-            return this.Ok(NotesList);
+
+            return this.Ok(notesList);
         }
 
         /// <summary>
         /// API for getting a particular note using NoteId
         /// </summary>
-        /// <param name="NotesId">NotesId parameter</param>
+        /// <param name="notesId">notesId parameter</param>
         /// <returns>returns a note using NotesId</returns>
         [HttpGet("{NotesId}/Get")]
-        public IActionResult GetNote(int NotesId)
+        public IActionResult GetNote(int notesId)
         {
             try
             {
                 long note = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                List<Note> notes = this.noteBL.GetNote(NotesId);
+                List<Note> notes = this.noteBL.GetNote(notesId);
                 if (notes != null)
                 {
                     return this.Ok(new { isSuccess = true, message = " Specific Note found Successfully", data = notes });
@@ -188,15 +186,15 @@ namespace FundooNotes.Controllers
         /// API for update note using NoteId
         /// </summary>
         /// <param name="noteUpdateModel">noteUpdateModel parameter</param>
-        /// <param name="NoteId">NoteId parameter</param>
+        /// <param name="noteId">noteId parameter</param>
         /// <returns>return a updated note</returns>
         [HttpPut("Update")]
-        public IActionResult UpdateNote(NoteModel noteUpdateModel, long NoteId)
+        public IActionResult UpdateNote(NoteModel noteUpdateModel, long noteId)
         {
             try
             {
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var result = this.noteBL.UpdateNote(noteUpdateModel, NoteId);
+                var result = this.noteBL.UpdateNote(noteUpdateModel, noteId);
                 if (result != null)
                 {
                     return this.Ok(new { isSuccess = true, message = "Notes Updated Successfully", data = result });
@@ -215,15 +213,15 @@ namespace FundooNotes.Controllers
         /// <summary>
         /// API for deleting a note using NoteId
         /// </summary>
-        /// <param name="NoteId">NoteId parameter</param>
+        /// <param name="noteId">noteId parameter</param>
         /// <returns>delete a note</returns>
         [HttpDelete("Delete")]
-        public IActionResult DeleteNotes(long NoteId)
+        public IActionResult DeleteNotes(long noteId)
         {
             try
             {
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var delete = this.noteBL.DeleteNotes(NoteId);
+                var delete = this.noteBL.DeleteNotes(noteId);
                 if (delete != null)
                 {
                     return this.Ok(new { isSuccess = true, message = "Notes Deleted Successfully" });
@@ -242,15 +240,15 @@ namespace FundooNotes.Controllers
         /// <summary>
         /// API for Archive a note
         /// </summary>
-        /// <param name="NoteId">NoteId parameter</param>
+        /// <param name="noteId">noteId parameter</param>
         /// <returns>archive a note</returns>
         [HttpPut("Archive")]
-        public IActionResult ArchiveNote(long NoteId)
+        public IActionResult ArchiveNote(long noteId)
         {
             try
             {
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var archieve = this.noteBL.ArchiveNote(NoteId);
+                var archieve = this.noteBL.ArchiveNote(noteId);
                 return this.Ok(new { isSuccess = true, data = archieve });
             }
             catch (Exception e)
@@ -260,18 +258,18 @@ namespace FundooNotes.Controllers
         }
 
         /// <summary>
-        /// API or Unarchive a note
+        /// API for remove note from archive
         /// </summary>
-        /// <param name="NoteId">NoteId parameter</param>
-        /// <returns>Unarchive a note</returns>
+        /// <param name="noteId">noteId parameter</param>
+        /// <returns>remove note from archive</returns>
         [HttpPut("UnArchive")]
-        public IActionResult UnArchiveNote(long NoteId)
+        public IActionResult UnArchiveNote(long noteId)
         {
             try
             {
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var unArchieve = this.noteBL.UnArchiveNote(NoteId);
-                return this.Ok(new { isSuccess = true, data = unArchieve });
+                var unarchieve = this.noteBL.UnArchiveNote(noteId);
+                return this.Ok(new { isSuccess = true, data = unarchieve });
             }
             catch (Exception e)
             {
@@ -282,15 +280,15 @@ namespace FundooNotes.Controllers
         /// <summary>
         /// API for pin a note
         /// </summary>
-        /// <param name="NotesId">NotesId parameter</param>
+        /// <param name="notesId">notesId parameter</param>
         /// <returns>pin a note</returns>
         [HttpPut("Pin")]
-        public IActionResult PinNote(long NotesId)
+        public IActionResult PinNote(long notesId)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(p => p.Type == "Id").Value);
-                var result = this.noteBL.PinNote(NotesId);
+                var result = this.noteBL.PinNote(notesId);
                 if (result != null)
                 {
                     return this.Ok(new { isSuccess = true, message = result });
@@ -305,17 +303,17 @@ namespace FundooNotes.Controllers
         }
 
         /// <summary>
-        /// API for put a note into trash and Untrash
+        /// API for put a note into trash
         /// </summary>
-        /// <param name="NotesId">NotesId parameter</param>
+        /// <param name="notesId">notesId parameter</param>
         /// <returns>put a note into trash and remove from trash</returns>
         [HttpPut("Trash")]
-        public IActionResult TrashNote(long NotesId)
+        public IActionResult TrashNote(long notesId)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var result = this.noteBL.TrashNote(NotesId);
+                var result = this.noteBL.TrashNote(notesId);
                 if (result != null)
                 {
                     return this.Ok(new { isSuccess = true, message = result });
@@ -332,16 +330,16 @@ namespace FundooNotes.Controllers
         /// <summary>
         /// API for adding a color
         /// </summary>
-        /// <param name="NoteId">NoteId parameter</param>
-        /// <param name="addcolor">addcolor parameter</param>
+        /// <param name="noteId">noteId parameter</param>
+        /// <param name="addcolor">add color parameter</param>
         /// <returns>add a color</returns>
         [HttpPut("Color")]
-        public IActionResult NoteColor(long NoteId, string addcolor)
+        public IActionResult NoteColor(long noteId, string addcolor)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var color = this.noteBL.NoteColor(NoteId, addcolor);
+                var color = this.noteBL.NoteColor(noteId, addcolor);
                 if (color != null)
                 {
                     return this.Ok(new { isSuccess = true, message = "Color Added!", data = color });
@@ -361,15 +359,15 @@ namespace FundooNotes.Controllers
         /// API for add Image into a note
         /// </summary>
         /// <param name="imageURL">imageURL parameter</param>
-        /// <param name="noteid">noteid parameter</param>
+        /// <param name="noteId">noteId parameter</param>
         /// <returns>add image</returns>
         [HttpPut("AddImage")]
-        public IActionResult AddBGImage(IFormFile imageURL, long noteid)
+        public IActionResult AddBGImage(IFormFile imageURL, long noteId)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var result = this.noteBL.AddBGImage(imageURL, noteid);
+                var result = this.noteBL.AddBGImage(imageURL, noteId);
                 if (result == true)
                 {
                     return this.Ok(new { isSuccess = true, message = "BGImage Added Successfully!", data = result });
@@ -388,22 +386,23 @@ namespace FundooNotes.Controllers
         /// <summary>
         /// API for remove image from note
         /// </summary>
-        /// <param name="noteid">noteid parameter</param>
+        /// <param name="noteId">noteId parameter</param>
         /// <returns>remove image</returns>
         [HttpDelete("RemoveImage")]
-        public IActionResult DeleteBGImage(long noteid)
+        public IActionResult DeleteBGImage(long noteId)
         {
             try
             {
                 long userid = Convert.ToInt32(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
-                var NoteBgImage = this.fundooContext.NotesTable.Where(x => x.NoteId == noteid).SingleOrDefault();
-                if(noteid == 0)
+                var noteBgImage = this.fundooContext.NotesTable.Where(x => x.NoteId == noteId).SingleOrDefault();
+                if (noteId == 0)
                 {
                     return this.NotFound(new { status = 404, isSuccess = false, Message = "Noteid not entered, Please enter a note id!" });
                 }
-                if(NoteBgImage.UserId == userid)
+
+                if (noteBgImage.UserId == userid)
                 {
-                    var result = this.noteBL.DeleteBGImage(noteid);
+                    var result = this.noteBL.DeleteBGImage(noteId);
                     if (result)
                     {
                         return this.Ok(new { status = 200, isSuccess = true, Message = "BG image deleted successfully!" });
