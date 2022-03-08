@@ -36,6 +36,9 @@ namespace FundooNotes
             this.Configuration = configuration;
         }
 
+        /// <summary>
+        /// Gets properties for configuration
+        /// </summary>
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -46,7 +49,7 @@ namespace FundooNotes
         /// <param name="services">services parameter</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<FundooContext>(opts => opts.UseSqlServer(Configuration["ConnectionString:FundooDB"]));
+            services.AddDbContext<FundooContext>(opts => opts.UseSqlServer(this.Configuration["ConnectionString:FundooDB"]));
             services.AddControllersWithViews()
             .AddNewtonsoftJson(options =>
             options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);

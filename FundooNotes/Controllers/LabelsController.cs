@@ -31,7 +31,6 @@ namespace FundooNotes.Controllers
     {
         private readonly ILabelBL labelBL;
         private readonly FundooContext fundooContext;
-        private readonly IMemoryCache memoryCache;
         private readonly IDistributedCache distributedCache;
 
         /// <summary>
@@ -39,13 +38,11 @@ namespace FundooNotes.Controllers
         /// </summary>
         /// <param name="labelBL">labelBL parameter</param>
         /// <param name="fundooContext">fundooContext parameter</param>
-        /// <param name="memoryCache">memoryCache parameter</param>
         /// <param name="distributedCache">distributedCache parameter</param>
-        public LabelsController(ILabelBL labelBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
+        public LabelsController(ILabelBL labelBL, FundooContext fundooContext, IDistributedCache distributedCache)
         {
             this.labelBL = labelBL;
             this.fundooContext = fundooContext;
-            this.memoryCache = memoryCache;
             this.distributedCache = distributedCache;
         }
 
@@ -53,6 +50,7 @@ namespace FundooNotes.Controllers
         /// API for adding a new label
         /// </summary>
         /// <param name="labelModel">labelModel parameter</param>
+        /// <returns>returns a new label</returns>
         [HttpPost("Create")]
         public IActionResult AddLabel(LabelModel labelModel)  // IActionResult -- how the server should respond to the request.
         {
@@ -70,14 +68,15 @@ namespace FundooNotes.Controllers
                     }
                     else
                     {
-                        return this.BadRequest(new { status = 400, isSuccess = false, Message = "Label not created" });
+                        return this.BadRequest(new { status = 400, isSuccess = false, message = "Label not created" });
                     }                   
                 }
-                return this.Unauthorized(new { status = 401, isSuccess = false, Message = "Unauthorized User!" });
+
+                return this.Unauthorized(new { status = 401, isSuccess = false, message = "Unauthorized User!" });
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { status = 400, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { status = 400, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
@@ -102,7 +101,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
@@ -115,17 +114,17 @@ namespace FundooNotes.Controllers
         {
             var cacheKey = "LabelsList";
             string serializedLabelsList;
-            var LabelsList = new List<Label>();
+            var labelsList = new List<Label>();
             var redisLabelsList = await this.distributedCache.GetAsync(cacheKey);
             if (redisLabelsList != null)
             {
                 serializedLabelsList = Encoding.UTF8.GetString(redisLabelsList);
-                LabelsList = JsonConvert.DeserializeObject<List<Label>>(serializedLabelsList);
+                labelsList = JsonConvert.DeserializeObject<List<Label>>(serializedLabelsList);
             }
             else
             {
-                LabelsList = await fundooContext.LabelsTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
-                serializedLabelsList = JsonConvert.SerializeObject(LabelsList);
+                labelsList = await this.fundooContext.LabelsTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
+                serializedLabelsList = JsonConvert.SerializeObject(labelsList);
                 redisLabelsList = Encoding.UTF8.GetBytes(serializedLabelsList);
                 var options = new DistributedCacheEntryOptions()
                     .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
@@ -133,21 +132,21 @@ namespace FundooNotes.Controllers
                 await this.distributedCache.SetAsync(cacheKey, redisLabelsList, options);
             }
 
-            return this.Ok(LabelsList);
+            return this.Ok(labelsList);
         }
 
         /// <summary>
         /// API for Get Labels by noteId
         /// </summary>
-        /// <param name="NotesId">NotesId parameter</param>
+        /// <param name="notesId">notesId parameter</param>
         /// <returns>returns all labels using notesId</returns>
         [HttpGet("{NotesId}/Get")]
-        public IActionResult GetlabelByNotesId(long NotesId)
+        public IActionResult GetlabelByNotesId(long notesId)
         {
             try
             {
                 long userId = Convert.ToInt32(User.Claims.FirstOrDefault(X => X.Type == "Id").Value);
-                var labels = this.labelBL.GetlabelByNotesId(NotesId);
+                var labels = this.labelBL.GetlabelByNotesId(notesId);
                 if (labels != null)
                 {
                     return this.Ok(new { status = 200, isSuccess = true, message = " Specific label found Successfully", data = labels });
@@ -159,7 +158,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
