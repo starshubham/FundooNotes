@@ -1,25 +1,33 @@
-﻿using BusinessLayer.Interfaces;
-using CommonLayer.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
-using RepositoryLayer.Context;
-using RepositoryLayer.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿//-----------------------------------------------------------------------
+// <copyright file="NotesController.cs" company="CompanyName">
+//     Company copyright tag.
+// </copyright>
+//-----------------------------------------------------------------------
 namespace FundooNotes.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using BusinessLayer.Interfaces;
+    using CommonLayer.Models;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Caching.Distributed;
+    using Microsoft.Extensions.Caching.Memory;
+    using Newtonsoft.Json;
+    using RepositoryLayer.Context;
+    using RepositoryLayer.Entities;
+    
+    /// <summary>
+    /// NotesController Class for creating api
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]  //user to grant and restrict permissions on Web pages.
+    [Authorize]  // user to grant and restrict permissions on Web pages.
     public class NotesController : ControllerBase
     {
         private readonly INoteBL noteBL;
@@ -28,24 +36,25 @@ namespace FundooNotes.Controllers
         private readonly IDistributedCache distributedCache;
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the <see cref="NotesController"/> class.
         /// </summary>
-        /// <param name="Nbl"></param>
-        /// <param name="funContext"></param>
+        /// <param name="noteBL">noteBL parameter</param>
+        /// <param name="fundooContext">fundooContext parameter</param>
+        /// <param name="memoryCache">memoryCache parameter</param>
+        /// <param name="distributedCache">distributedCache parameter</param>
         public NotesController(INoteBL noteBL, FundooContext fundooContext, IMemoryCache memoryCache, IDistributedCache distributedCache)
         {
             this.noteBL = noteBL;
             this.fundooContext = fundooContext;
             this.memoryCache = memoryCache;
             this.distributedCache = distributedCache;
-
         }
 
         /// <summary>
-        /// Create Note api
+        /// API for creating a new note
         /// </summary>
-        /// <param name="noteModel"></param>
-        /// <returns></returns>
+        /// <param name="noteModel">noteModel parameter</param>
+        /// <returns>return a note</returns>
         [HttpPost("Create")]
         public IActionResult CreateNote(NoteModel noteModel)
         {
@@ -64,20 +73,24 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
             }
         }
 
-        [HttpGet("DisplayAll")]
+        /// <summary>
+        /// API for Getting all Notes using UserId
+        /// </summary>
+        /// <param name="userId">userId parameter</param>
+        /// <returns>returns all notes of a user</returns>
+        [HttpGet("{UserId}/Get")]
         public IActionResult GetAllNotes(long userId)
         {
             try
             {
-                var notes = noteBL.GetAllNotes(userId);
+                var notes = this.noteBL.GetAllNotes(userId);
                 if (notes != null)
                 {
                     return this.Ok(new { isSuccess = true, message = " All notes found Successfully", data = notes});
-
                 }
                 else
                 {
@@ -86,20 +99,23 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException= e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
             }
         }
 
-        [HttpGet("DisplayEveryone")]
+        /// <summary>
+        /// API for getting all Notes of all users
+        /// </summary>
+        /// <returns>returns all notes of every user</returns>
+        [HttpGet("GetAll")]
         public IActionResult GetEveryoneNotes()
         {
             try
             {
-                var notes = noteBL.GetEveryoneNotes();
+                var notes = this.noteBL.GetEveryoneNotes();
                 if (notes != null)
                 {
                     return this.Ok(new { isSuccess = true, message = " All notes found Successfully", data = notes });
-
                 }
                 else
                 {
@@ -108,17 +124,21 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.InnerException.Message });
             }
         }
 
-        [HttpGet("redis")]
+        /// <summary>
+        /// API for getting all notes using redis cache
+        /// </summary>
+        /// <returns>returns all notes of all users</returns>
+        [HttpGet("Redis")]
         public async Task<IActionResult> GetAllNotesUsingRedisCache()
         {
             var cacheKey = "NotesList";
             string serializedNotesList;
             var NotesList = new List<Note>();
-            var redisNotesList = await distributedCache.GetAsync(cacheKey);
+            var redisNotesList = await this.distributedCache.GetAsync(cacheKey);
             if (redisNotesList != null)
             {
                 serializedNotesList = Encoding.UTF8.GetString(redisNotesList);
@@ -126,18 +146,23 @@ namespace FundooNotes.Controllers
             }
             else
             {
-                NotesList = await fundooContext.NotesTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
+                NotesList = await this.fundooContext.NotesTable.ToListAsync();  // Comes from Microsoft.EntityFrameworkCore Namespace
                 serializedNotesList = JsonConvert.SerializeObject(NotesList);
                 redisNotesList = Encoding.UTF8.GetBytes(serializedNotesList);
                 var options = new DistributedCacheEntryOptions()
                     .SetAbsoluteExpiration(DateTime.Now.AddMinutes(10))
                     .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-                await distributedCache.SetAsync(cacheKey, redisNotesList, options);
+                await this.distributedCache.SetAsync(cacheKey, redisNotesList, options);
             }
-            return Ok(NotesList);
+            return this.Ok(NotesList);
         }
 
-        [HttpGet("{Id}/Display")]
+        /// <summary>
+        /// API for getting a particular note using NoteId
+        /// </summary>
+        /// <param name="NotesId">NotesId parameter</param>
+        /// <returns>returns a note using NotesId</returns>
+        [HttpGet("{NotesId}/Get")]
         public IActionResult GetNote(int NotesId)
         {
             try
@@ -149,14 +174,22 @@ namespace FundooNotes.Controllers
                     return this.Ok(new { isSuccess = true, message = " Specific Note found Successfully", data = notes });
                 }
                 else
+                {
                     return this.NotFound(new { isSuccess = false, message = "Specific Note not Found" });
+                }                  
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API for update note using NoteId
+        /// </summary>
+        /// <param name="noteUpdateModel">noteUpdateModel parameter</param>
+        /// <param name="NoteId">NoteId parameter</param>
+        /// <returns>return a updated note</returns>
         [HttpPut("Update")]
         public IActionResult UpdateNote(NoteModel noteUpdateModel, long NoteId)
         {
@@ -175,10 +208,15 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API for deleting a note using NoteId
+        /// </summary>
+        /// <param name="NoteId">NoteId parameter</param>
+        /// <returns>delete a note</returns>
         [HttpDelete("Delete")]
         public IActionResult DeleteNotes(long NoteId)
         {
@@ -197,10 +235,15 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API for Archive a note
+        /// </summary>
+        /// <param name="NoteId">NoteId parameter</param>
+        /// <returns>archive a note</returns>
         [HttpPut("Archive")]
         public IActionResult ArchiveNote(long NoteId)
         {
@@ -212,10 +255,15 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API or Unarchive a note
+        /// </summary>
+        /// <param name="NoteId">NoteId parameter</param>
+        /// <returns>Unarchive a note</returns>
         [HttpPut("UnArchive")]
         public IActionResult UnArchiveNote(long NoteId)
         {
@@ -227,10 +275,15 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { Status = 401, isSuccess = false, Message = e.Message, InnerException = e.InnerException });
+                return this.BadRequest(new { Status = 401, isSuccess = false, message = e.InnerException.Message });
             }
         }
 
+        /// <summary>
+        /// API for pin a note
+        /// </summary>
+        /// <param name="NotesId">NotesId parameter</param>
+        /// <returns>pin a note</returns>
         [HttpPut("Pin")]
         public IActionResult PinNote(long NotesId)
         {
@@ -242,6 +295,7 @@ namespace FundooNotes.Controllers
                 {
                     return this.Ok(new { isSuccess = true, message = result });
                 }
+
                 return this.BadRequest(new { isSuccess = false, message = result });
             }
             catch (Exception ex)
@@ -250,6 +304,11 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// API for put a note into trash and Untrash
+        /// </summary>
+        /// <param name="NotesId">NotesId parameter</param>
+        /// <returns>put a note into trash and remove from trash</returns>
         [HttpPut("Trash")]
         public IActionResult TrashNote(long NotesId)
         {
@@ -261,6 +320,7 @@ namespace FundooNotes.Controllers
                 {
                     return this.Ok(new { isSuccess = true, message = result });
                 }
+
                 return this.BadRequest(new { isSuccess = false, message = result });
             }
             catch (Exception ex)
@@ -269,6 +329,12 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// API for adding a color
+        /// </summary>
+        /// <param name="NoteId">NoteId parameter</param>
+        /// <param name="addcolor">addcolor parameter</param>
+        /// <returns>add a color</returns>
         [HttpPut("Color")]
         public IActionResult NoteColor(long NoteId, string addcolor)
         {
@@ -281,7 +347,9 @@ namespace FundooNotes.Controllers
                     return this.Ok(new { isSuccess = true, message = "Color Added!", data = color });
                 }
                 else
+                {
                     return this.BadRequest(new { isSuccess = false, message = " Color not Added!" });
+                }                   
             }
             catch (Exception ex)
             {
@@ -289,6 +357,12 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// API for add Image into a note
+        /// </summary>
+        /// <param name="imageURL">imageURL parameter</param>
+        /// <param name="noteid">noteid parameter</param>
+        /// <returns>add image</returns>
         [HttpPut("AddImage")]
         public IActionResult AddBGImage(IFormFile imageURL, long noteid)
         {
@@ -301,7 +375,9 @@ namespace FundooNotes.Controllers
                     return this.Ok(new { isSuccess = true, message = "BGImage Added Successfully!", data = result });
                 }
                 else
+                {
                     return this.BadRequest(new { isSuccess = false, message = " BGImage not Added!" });
+                }                    
             }
             catch (Exception ex)
             {
@@ -309,6 +385,11 @@ namespace FundooNotes.Controllers
             }
         }
 
+        /// <summary>
+        /// API for remove image from note
+        /// </summary>
+        /// <param name="noteid">noteid parameter</param>
+        /// <returns>remove image</returns>
         [HttpDelete("RemoveImage")]
         public IActionResult DeleteBGImage(long noteid)
         {
@@ -327,6 +408,7 @@ namespace FundooNotes.Controllers
                     {
                         return this.Ok(new { status = 200, isSuccess = true, Message = "BG image deleted successfully!" });
                     }
+
                     return this.BadRequest(new { status = 400, isSuccess = false, Message = "Image not deleted" });
                 }
                 else
@@ -336,7 +418,7 @@ namespace FundooNotes.Controllers
             }
             catch (Exception e)
             {
-                return this.BadRequest(new { status = 400, isSuccess = false, Message = e.InnerException.Message });
+                return this.BadRequest(new { status = 400, isSuccess = false, message = e.InnerException.Message });
             }
         }
     }
