@@ -14,21 +14,24 @@ namespace CommonLayer.Models
         MessageQueue messageQueue = new MessageQueue();
         public void MSMQSender(string token)
         {
+            // Setting the QueuPath where we want to store the messages.
             messageQueue.Path = @".\private$\Token";//for windows path
 
             if (!MessageQueue.Exists(messageQueue.Path))
             {
-
+                // Creates the new queue named "Token"
                 MessageQueue.Create(messageQueue.Path);
 
             }
+            // The following code/function sends data/message to the "Token" Queue:
             messageQueue.Formatter = new XmlMessageFormatter(new Type[] { typeof(string) });
-            messageQueue.ReceiveCompleted += MessageQueue_ReceiveCompleted;
-            messageQueue.Send(token);
+            messageQueue.ReceiveCompleted += MessageQueue_ReceiveCompleted;  // this code tells MSMQ to receive the messages as soon as the new entry or message is placed in this queue.
+            messageQueue.Send(token);  // here desired messages is token
             messageQueue.BeginReceive();
             messageQueue.Close();
         }
 
+        // The following function is used to receive the message sent by the front end (the application):
         private void MessageQueue_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
         {
             var message = messageQueue.EndReceive(e.AsyncResult);
