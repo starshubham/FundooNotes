@@ -146,7 +146,7 @@ namespace FundooNotes
                 });
             }
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); // Adds middleware for redirecting HTTP Requests to HTTPS.
 
             app.UseRouting();
             app.UseAuthentication();
